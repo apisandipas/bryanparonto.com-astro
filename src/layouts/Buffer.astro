@@ -1,0 +1,128 @@
+---
+import "@fontsource-variable/roboto-mono";
+import "@fontsource/victor-mono/latin-400-italic.css";
+import "../styles/global.css";
+import { person } from "../data/resume";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Buffer name shown in the header-line, e.g. "bryanparonto". */
+  buffer: string;
+  /** In-page sections for the header-line nav (front page only). */
+  sections?: { id: string; label: string }[];
+  /** Show a "← bryanparonto" link in the header-line. */
+  back?: boolean;
+  type?: "website" | "article";
+  jsonLd?: object;
+}
+const { title, description, buffer, sections = [], back = false, type = "website", jsonLd } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? person.site);
+const og = new URL("/og.png", Astro.site ?? person.site);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="alternate" type="application/rss+xml" title="Bryan Paronto — writing" href="/rss.xml" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#232A2E" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F4F0D9" media="(prefers-color-scheme: light)" />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        d.classList.add("js");
+        try {
+          var t = localStorage.getItem("theme");
+          if (t === "light" || t === "dark") d.dataset.theme = t;
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+
+    <header class="headerline">
+      <div class="hl-left">
+        {back ? (
+          <a class="hl-back" href="/"><span aria-hidden="true">←</span> <span class="hl-back-label">bryanparonto</span></a>
+        ) : (
+          <a class="hl-status" href="#top" aria-label="Back to top">BP</a>
+        )}
+        <span class="hl-buffer"><strong>{buffer}</strong> <span class="faded">(Org)</span></span>
+        <span class="hl-crumb faded js-only" data-crumb aria-hidden="true"></span>
+      </div>
+      <div class="hl-right">
+        {sections.length > 0 && (
+          <nav class="hl-nav" aria-label="Sections">
+            {sections.map((s) => <a href={`#${s.id}`}>{s.label}</a>)}
+          </nav>
+        )}
+        {!back && <a class="hl-link hl-blog" href="/blog">Blog</a>}
+        <span class="hl-pos faded js-only" data-pos aria-hidden="true">Top</span>
+        <button class="hl-btn js-only hl-outline" type="button" data-open="outline" aria-label="Outline: jump to a heading">☰</button>
+        <button class="hl-btn js-only" type="button" data-theme-toggle aria-label="Switch colour theme"><span data-theme-icon aria-hidden="true">☾</span></button>
+        <button class="hl-btn js-only hl-keys" type="button" data-open="keys" aria-label="Keyboard shortcuts">?</button>
+      </div>
+    </header>
+
+    <main id="content" tabindex="-1">
+      <slot />
+    </main>
+
+    <footer class="buffer-end">
+      <p><span class="deco" aria-hidden="true"># </span>Local Variables:</p>
+      <p><span class="deco" aria-hidden="true"># </span>built-with: <a href="https://astro.build">astro</a>, <a href="https://github.com/rasendubi/uniorg">uniorg</a>, <a href="https://orgmode.org">org-mode</a></p>
+      <p><span class="deco" aria-hidden="true"># </span>theme: everforest, after <a href="https://github.com/rougier/nano-emacs">N Λ N O</a></p>
+      <p><span class="deco" aria-hidden="true"># </span>© {new Date().getFullYear()} {person.name} · <a href="/rss.xml">rss</a></p>
+      <p><span class="deco" aria-hidden="true"># </span>End:</p>
+    </footer>
+
+    <dialog class="popup" id="keys" aria-labelledby="keys-title">
+      <div class="popup-head">
+        <h2 id="keys-title">which-key</h2>
+        <button type="button" class="hl-btn" data-close aria-label="Close">×</button>
+      </div>
+      <dl class="which-key">
+        <dt><kbd>n</kbd> <kbd>j</kbd></dt><dd>next heading</dd>
+        <dt><kbd>p</kbd> <kbd>k</kbd></dt><dd>previous heading</dd>
+        <dt><kbd>Tab</kbd></dt><dd>fold heading (after n/p or a click on a heading)</dd>
+        <dt><kbd>⇧ Tab</kbd></dt><dd>cycle: overview → contents → all</dd>
+        <dt><kbd>g</kbd> <kbd>g</kbd></dt><dd>top of buffer</dd>
+        <dt><kbd>G</kbd></dt><dd>end of buffer</dd>
+        <dt><kbd>o</kbd></dt><dd>outline (jump to heading)</dd>
+        <dt><kbd>t</kbd></dt><dd>toggle theme</dd>
+        <dt><kbd>Esc</kbd></dt><dd>quit / release Tab</dd>
+        <dt><kbd>?</kbd></dt><dd>this help</dd>
+      </dl>
+    </dialog>
+
+    <dialog class="popup" id="outline" aria-labelledby="outline-title">
+      <div class="popup-head">
+        <h2 id="outline-title">Outline</h2>
+        <button type="button" class="hl-btn" data-close aria-label="Close">×</button>
+      </div>
+      <ol class="outline-list" data-outline-list></ol>
+    </dialog>
+
+    <div class="visually-hidden" aria-live="polite" data-announce></div>
+
+    <script>
+      import { initBuffer } from "../scripts/buffer";
+      initBuffer();
+    </script>
+  </body>
+</html>

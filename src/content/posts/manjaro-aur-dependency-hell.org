@@ -1,0 +1,38 @@
+#+TITLE: Manjaro and AUR Dependency Hell
+#+DATE: 2022-03-07
+#+PUBLISHED: true
+#+AUTHOR: Bryan Paronto
+#+CATEGORY: posts
+#+EMAIL: bryan@cablecar.digital
+#+TAGS: linux manjaro aur
+
+I've been running an installation of Manjaro Linux for nearly two years now. Manjaro is a rolling release distro based on Arch Linux, meaning updates get rolled out every couple of weeks by the Arch Linux team. Manjaro Team holds back their release a few weeks for additional testing before unleashing the updates themselves. While this gives me some level of stability over straight Arch, It also gives you enough ammo to shoot yourself in the foot.
+
+Arch Linux is popular with Linux enthusiasts like me who like to get their hands dirty in tweaking their configuration files for fun and profit. But it's "killer feature" is the Arch User Repository, where the user can upload package definitions for any and all software not contained in the official repositories. As a result the Arch user based has quick, very non-official access to bleeding edge versions, forks, obscure programs etc.
+
+This is all well and good, but recall: I don't run Arch. It was only a matter of time before my propensity to run Manjaro's update command every few days bit me. This week it happened.
+
+I ran the command to update the system (I use =yay= for this), but it failed shortly after warning about not being able to find an acceptable version of =gcc-libs=, relied on by =libgccjit=, relied on by Emacs 28+ for it's new native compilation features. At some point around the recent update, Arch Linux had decided, for reasons as yet unknown to me, to remove =libgccjit= from the AUR all together to be included in the official repository. Being that Manjaro is weeks behind the movement of Arch, I no longer had access. Additionally, Arch had recently bumped the version of =gcc= to a newer minor version release. It was a recipe that called for a 'fun' night of Googling. Here's how I solved it.
+
+First, I had to tell yay to uninstall my packages that depended on =libgccjit=. For me this meant uninstalling Emacs, EXWM (the Emacs X Window Manager) as well as one other dependency of EXWM.
+
+#+begin_src shell
+yay -R emacs28-git emacs-xelb-git emacs-exwm
+#+end_src
+
+ Then, by shear luck, I learned that just because a package has been removed from the AUR, doesn't mean it's not still on their servers. With the following commands, I was able to clone the =libgccjit= library, make and manually install it.
+
+ #+begin_src shell
+git clone https://aur.archlinux.org/libgccjit.git
+makepkg -f
+makepkg -si
+ #+end_src
+
+ This solved the dependency mismatch hell. After it built in 25 or so minutes, I then only needed to search the AUR once again and add my missing Emacs related packages back. 40 minutes of building later, I was finally back in action.
+
+ #+begin_src shell
+# Second verse, same as the first (now with S flag install of R)
+ yay -S emacs28-git emacs-xelb-git emacs-exwm
+ #+end_src
+
+ Did I know this could eventually happen? Yes. It was mere a matter of when. However, being on the other side of it now, I'm sort not okay with it. The AUR functionality has become a big part of my system at this point as I have many AUR packages installed, and yet because of the unsynced updates between Manjaro and the AUR, this is a fundamentally broken system. From the stories I've heard, I've gotten off easy. With that said, I'll be giving serious thought to moving on from Manjaro. Stay tuned for more updates on that front.

@@ -1,0 +1,13 @@
+#+title: Zap2It
+#+order: 4
+#+client: Tribune Media
+#+role: Lead developer, via Doejo
+#+launch_date: 2015
+#+image: zap2it.png
+#+alt: The Zap2It TV listings grid: channels down the side, time slots across the top.
+#+tech: react backbone nodejs redis wordpress-vip
+#+url: https://tvlistings.zap2it.com/
+#+link_label: Visit zap2it.com
+#+outcome: Re-engineered a slow, data-heavy TV listings grid as a fast React single-page app.
+
+Zap2It is a television listings provider. Their existing listings grid was suffering from poor performance, so we rebuilt it in React with a custom Backbone-based Flux implementation on the WordPress VIP platform.

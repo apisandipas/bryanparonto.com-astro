@@ -1,0 +1,9 @@
+#+title: imp
+#+order: 5
+#+tech: rust scheme
+#+links: Tour https://apisandipas.github.io/imp/ | Source https://github.com/apisandipas/imp
+#+outcome: An editor as flexible as Emacs, with Vim editing by default.
+#+image: imp.png
+#+alt: imp's home page: the headline The editor you can rewrite while it runs, above a split editor with a Scheme init file on the left and Markdown notes on the right.
+
+A small Rust core handles buffers, rendering and parsing. Every key, command and mode is Scheme ([[https://github.com/mattwparas/steel][Steel]]) that you can redefine while it runs. imp is in alpha, but I use it day to day, and it shows I'm comfortable working below the web stack.

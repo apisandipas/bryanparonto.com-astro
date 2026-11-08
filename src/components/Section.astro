@@ -1,0 +1,38 @@
+---
+/**
+ * An org heading that folds: `* Title  :tags:` over a native <details>.
+ * Level 1 renders an <h2> (the page title owns <h1>), level 2 an <h3>.
+ */
+interface Props {
+  id: string;
+  title: string;
+  level?: 1 | 2;
+  tags?: string[];
+  open?: boolean;
+  keyword?: string;
+  /** Shared name makes sibling sections an exclusive accordion. */
+  name?: string;
+  class?: string;
+}
+const { id, title, level = 1, tags = [], open = true, keyword, name, class: cls } = Astro.props;
+const H = level === 1 ? "h2" : "h3";
+---
+<details id={id} class:list={["org-section", `lvl-${level}`, cls]} open={open} name={name} data-heading={title}>
+  <summary>
+    <span class="fringe" aria-hidden="true"></span>
+    <H class="org-h">
+      <span class="stars" aria-hidden="true">{"*".repeat(level)} </span>
+      {keyword && <span class="kw-todo">{keyword} </span>}
+      <span class="h-text">{title}</span>
+      <span class="ellipsis" aria-hidden="true">...</span>
+    </H>
+    {tags.length > 0 && (
+      <span class="tags"><span class="visually-hidden">Tags: </span><span aria-hidden="true">:</span>{tags.map((t, i) => (
+        <><span class="tag">{t}</span><span aria-hidden="true">:</span>{i < tags.length - 1 && <span class="visually-hidden">, </span>}</>
+      ))}</span>
+    )}
+  </summary>
+  <div class="org-body">
+    <slot />
+  </div>
+</details>

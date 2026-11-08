@@ -1,0 +1,21 @@
+#+TITLE: Capturing Desktop Audio in OBS on Linux
+#+DATE: 2022-03-21
+#+PUBLISHED: true
+#+AUTHOR: Bryan Paronto
+#+CATEGORY: posts
+#+EMAIL: bryan@cablecar.digital
+#+TAGS: obs-studio streaming audio
+
+I'm not certain if this information is truly worth sharing, but I did come upon this knowledge only after hours of try, try, trying again with little help from the internet. So I figure it would be worthwhile to at least share what I've learned. This won't be the first time I've written from such an angle and it's not likely to be the last.
+
+I've been wanting to try my hand at streaming / content creation on YouTube / Twitch. Truth be told I consume far more of that sort of content these days than mainstream TV platforms. Needless to say my niche interest in things like 40-year-old text editors doesn't come up much in the mainstream media.
+
+One last hurdle I've needed to leap over on the road to content creation was to get familiar with video / audio recording technology as it exist today on Linux-based platforms. If you've never had to deal with audio issues on Linux, consider yourself lucky. It's the freaking' wild west out here. ALSA. Pulseaudio. Pipewire. Sinks. Streams. Sources - It all feel pretty bare metal some days, though I know I'm standing on the shoulders of engineers who've worked their darnedest to make this as painless as possible.
+
+It took me weeks last spring to figure out how to record audio in Ardour, but perhaps thats a story for another time. (Hint: I didn't know Jack. Jack, in this case being special audio server that I had to install and run in the background...)
+0
+Yesterday, I decided to figure out how to capture audio from non-microphone sources in OBS-Studio, a popular program for live-streaming and screen recording. Getting audio from my two-track interface is easy enough on the other side of the ALSA/Pulseaudio/Jack bridge. (Literally, one has to "bridge" these interfaces together to make things actually work as expected). But I was having a hard time figuring out capturing audio from browsers or media players.
+
+Most of the learning resources I found target Mac OS and Windows users. I saw a few posts on the Arch Linux forums where the question was asked but not satisfyingly answered. It seems at one point there was an easier way to do this in OBS, but it seems to have done the way of the buffalo.
+
+Here's what I ended up doing: I'm now running an aux cord from my own headphone jack into a capture card, back into my computer via a USB cable and then capturing that as a Pulse Audio source within OBS. This feels very hacky. But it seems to work fairly well. It's a little noisy, which could be attributable to my $40 no-name capture card, but OBS' built-in noise-suppression filter seems to do the trick in making it all tolerable. Now I can make some of those cheesy reaction videos and window manager review videos I seem to watch a ton of.

@@ -1,0 +1,13 @@
+#+title: VA.gov
+#+order: 1
+#+client: US Dept of Veterans Affairs
+#+role: Sr. front-end engineer, via Kind Systems
+#+launch_date: 2023
+#+image: va-gov.png
+#+alt: The VA.gov homepage: a blue hero announcing the PACT Act, a search box and a list of top pages.
+#+tech: react graphql metalsmith a11y
+#+url: https://www.va.gov/
+#+link_label: Visit va.gov
+#+outcome: Rebuilt the homepage of a site with 20 million unique visitors a month.
+
+I was embedded on the VA.gov Public Websites team, where I built the new homepage templates with Metalsmith, React and GraphQL. Along the way I helped resolve thousands of accessibility infractions across the public site.

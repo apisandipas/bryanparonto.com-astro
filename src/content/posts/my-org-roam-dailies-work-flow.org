@@ -1,0 +1,250 @@
+#+TITLE: My Org-Roam Dailies workflow
+#+DATE: 2023-05-12
+#+PUBLISHED: true
+#+AUTHOR: Bryan Paronto
+#+CATEGORY: posts
+#+EMAIL: bryan@cablecar.digital
+#+TAGS: emacs org-roam notetaking
+
+After discovering PKM (Personal Knowledge Management) during the peak of the pandemic, I've been fairly obsessed with the concept of building a second brain through the practice of linked note-making. I went from Evernote -> vim-wiki -> Obsidian -> Org-Mode + the org-roam package.
+
+My note consist most of [[https://notes.andymatuschak.org/Evergreen_notes][Evergreen Notes]] with some flavor of [[https://zettelkasten.de/introduction/][Zettlekasten]] mixed in. The notes I make most often are my daily notes. I start each day by creating an new Org-Roam Node named for the days date and fill it with a template that looks something like this:
+
+#+begin_src org
+* 🤹 Tasks
+
+* 🌲 Log
+
+* 🏁 Stand Ups
+
+* 📓 Journal
+
+* 🍲 Take-Aways
+#+end_src
+
+Tasks is where I put whichever TODOs I will accomplish on that particular day. Log is where I keep a timelog of what I'm working on and for how long. Stand Ups is wheer I enter my notes and things I plan on mentioning in my Daily stand up meeting. Journal is for a personal commentary or thoughts I'd like to recall late about this particular day. I dont journal daily, but if I find inspiration, this is where it goes. And finally, Take Aways, where I record any pearls of wisdom the day might have brought.
+
+** The Problem
+
+The one problem I found with my workflow is it tends to swim against the tide of the workflow most often priscribed in the world of Org-Mode: Capturing small notes and having them automagically file into your big note. I have this configured, but I tend to simply keep the Daily note buffer open in a seperate Emacs frame from my work and refer to it / update it as I need through the day. Unfortunately, this workflow isn't really covered in the packaged methods of the Org-Roam package. Fortunately, this is Emacs and we have the means to make it happen.
+
+In addition to daily notes, I keep Monthly  wvand Yearly notes. What I untimately want to happen is this:
+- Open a daily note, pulling in the above template from a directory of document templates I keep.
+- Populate a "Parent" link at the top of the note to the Monthly note.
+- If the monthly note doesnt exist for any reason (for example, it might be the first day of the month), then it should be created and populated with it's own respective template.
+- Within that Monthly note, I similarly wasnt a link to the Yearly Note, which if it doesnt exist, gets created and populated with it's own respective template.
+
+The automattic linking of these notes makes keeping things organized a breeze. Also it looks neat in my Org-Roam-UI window. I love seeing my graph full of my hundreds notes.
+
+** The Solution, for now.
+
+After much trial and error I've come up with the following code as a solution:
+
+NOTE: This was meant to work in Doom Emacs specifically. If you wish to use it outside of Doom Emacs, remove the `after!` macro. The only dependencies I believe are Hydra and Org-Roam.
+
+#+begin_src emacs-lisp
+
+;; Some utility function to help with formatting the correct date for
+;; yesterday and tomorrow notes, should I desire to access
+;; them quickly with keybindings.
+(defun yesterday ()
+  (time-subtract (current-time) (seconds-to-time 86400)))
+
+(defun tomorrow ()
+  (time-add (current-time) (seconds-to-time 86400)))
+
+(defun yesterday-filename ()
+  "Returns yesterday's date in the format '%Y-%m-%d %a'."
+  (let* ((yesterday (time-subtract (current-time) (seconds-to-time 86400)))
+         (year (format-time-string "%Y" yesterday))
+         (month (format-time-string "%m" yesterday))
+         (day (format-time-string "%d" yesterday)))
+    (concat year "-" month "-" day)))
+
+(defun yesterday-title ()
+  "Returns yesterday's date in the format '%Y-%m-%d %a'."
+  (let* ((yesterday (time-subtract (current-time) (seconds-to-time 86400)))
+         (year (format-time-string "%Y" yesterday))
+         (month (format-time-string "%m" yesterday))
+         (day (format-time-string "%d" yesterday))
+         (weekday (format-time-string "%a" yesterday)))
+    (concat year "-" month "-" day " " weekday)))
+
+
+(defun tomorrow-filename ()
+  "Returns yesterday's date in the format '%Y-%m-%d %a'."
+  (let* ((tomorrow (time-add (current-time) (seconds-to-time 86400)))
+         (year (format-time-string "%Y" tomorrow))
+         (month (format-time-string "%m" tomorrow))
+         (day (format-time-string "%d" tomorrow)))
+    (concat year "-" month "-" day)))
+
+(defun tomorrow-title ()
+  "Returns tomorrow's date in the format '%Y-%m-%d %a'."
+  (let* ((tomorrow (time-add (current-time) (seconds-to-time 86400)))
+         (year (format-time-string "%Y" tomorrow))
+         (month (format-time-string "%m" tomorrow))
+         (day (format-time-string "%d" tomorrow))
+         (weekday (format-time-string "%a" tomorrow)))
+    (concat year "-" month "-" day " " weekday)))
+
+
+(after! org-roam
+
+  ;; A Hydra menu to display the options for available related keybindings.
+  (defhydra bp/org-roam-jump-menu (:exit t)
+    "
+  ^Jump To Day^    ^Periodic^
+  ^^^^^^^^-------------------------------------------------
+  _t_: today       _m_: current month
+  _r_: tomorrow    _e_: current year
+  _y_: yesterday  ^ ^
+  _d_: date       ^ ^
+  "
+    ("t" bp/todays-note)
+    ("r" bp/tomorrows-note)
+    ("y" bp/yesterdays-note)
+    ("d" org-roam-dailies-goto-date)
+    ("m" bp/monthly-note)
+    ("e" bp/yearly-note)
+    ("q" nil "cancel"))
+
+  (map! :leader
+        :prefix ("n" "notes")
+        :desc "Journal Manager"
+        "j" #'bp/org-roam-jump-menu/body)
+
+
+  (defun org-roam-daily-note (template-name filename title parent &optional open date)
+    "Create a daily note using a template file. It calles itself recursively up to two times to assure the creation of the Parent Monthly and Yearly notes.
+
+   The main functionality lies here.
+   - TEMPLATE-NAME corresponds to the type of note being taken (daily, monthly, yearly).
+   - FILENAME is the notes filename
+   - TITLE, obviously, is the title used at the top of the Org document.
+   - PARENT is perhaps poorly named. It refers to the format of the parent note.
+   - OPEN is a boolean indicating if the newly created note should beopened or not.
+   - DATE is the date the note the parent should be created for. This will assure the `tomorrows-note`
+     function works  on the first of the month.
+
+                "
+    (interactive)
+    (let* ((template-file (concat org-roam-directory "/bins/templates/" template-name ".tmp.org"))
+           (file (concat org-roam-directory "/temporal/" template-name "/" filename ".org"))
+           ;; (link-to-parent (parent-link parent date))
+           (org-id-overriding-file-name file)
+           id)
+      (cond
+       ((string-equal "daily" template-name) (org-roam-daily-note "monthly"
+                                                  (format-time-string "%Y-%B" (current-time))
+                                                  (format-time-string "%B %Y" (current-time))
+                                                  "%Y"
+                                                  nil
+                                                  (current-time) ))
+       ((string-equal "monthly" template-name) (org-roam-daily-note "yearly"
+                                                    (format-time-string "%Y" (current-time))
+                                                    (format-time-string "%Y" (current-time))
+                                                    ""
+                                                    nil
+                                                    (current-time) )))
+      (unless (file-exists-p file)
+        (with-temp-buffer
+          (let* ((link-to-parent (if (string-equal "yearly" template-name)
+                       ;; Change this to what ever link youd like your top level Yearly note to link to;
+                       ;; Mine links to my Temporal Map Of Content note.
+                      "[[id:ee48e0b8-14c0-4c57-a24c-e8248fdca288][Temporal MOC]]"
+                     (parent-link parent date))))
+            (insert
+             (concat ":PROPERTIES:\n:ID:        \n:END:\n"
+                     "#+title: " title " \n\n"
+                     "Parent :: " link-to-parent "\n\n"
+                     ))
+            (goto-char 25)
+            (setq id (org-id-get-create))
+            (goto-line 8)
+            (insert-file-contents template-file)
+            (write-file file)
+            (org-roam-db-update-file file)
+            (format "[[id:%s][%s]]" id title)))
+            )
+      (if open (find-file file))
+
+      ))
+
+  (defun bp/todays-note ()
+    "Create and open todays note"
+    (interactive)
+    (org-roam-daily-note  "daily"
+                          (format-time-string "%Y-%m-%d")
+                          (format-time-string "%Y-%m-%d %a")
+                          "%B %Y"
+                          :t
+                          (current-time)))
+
+  (defun bp/yesterdays-note ()
+    "Create and open yesterdays note"
+    (interactive)
+    (org-roam-daily-note  "daily"
+                          (yesterday-filename)
+                          (yesterday-title)
+                          "%B %Y"
+                          :t
+                          (yesterday)))
+
+  (defun bp/tomorrows-note ()
+    "Create and open tomorrow's note"
+    (interactive)
+    (org-roam-daily-note  "daily"
+                          (tomorrow-filename)
+                          (tomorrow-title)
+                          "%B %Y"
+                          :t
+                          (tomorrow)))
+
+
+  (defun bp/monthly-note ()
+    "Create and open this month's note"
+    (interactive)
+    (org-roam-daily-note  "monthly"
+                          (format-time-string "%Y-%B")
+                          (format-time-string "%B %Y")
+                          "%Y"
+                          :t
+                          (current-time)))
+
+  (defun bp/yearly-note ()
+    "Create and open this year's note"
+    (interactive)
+    (org-roam-daily-note  "yearly"
+                          (format-time-string "%Y")
+                          (format-time-string "%Y")
+                          ""
+                          :t
+                          (current-time)))
+
+
+  (defun bp/get-roam-link (node)
+    "Take an org roam NODE and returns a string
+      that contains the link to that node."
+    (org-link-make-string
+     (concat
+      "id:" (org-roam-node-id node))
+     (org-roam-node-title node)))
+
+  (defun bp/get-roam-node-by-format-and-date (format &optional date)
+    "Retrieves an org-roam node by the format string and date associated with the node"
+    (org-roam-node-from-title-or-alias (format-time-string format date)))
+
+  (defun parent-link (format &optional date)
+    "Insert the link to the parent node"
+    (let* ((node (bp/get-roam-node-by-format-and-date format date)))
+      (if node
+          (bp/get-roam-link node)
+        "No Parent"))))
+
+
+(provide 'bp-roam-dailies)
+#+end_src
+
+** Conclusion
+Writing this allowed me to get my hands dirty in Emacs Lisp to a level I'd never done before. The documentation is extensive but sometimes quite dense, especially the sections related to dates and times. Over all it was satisfying to be able to bend Emacs to my will in order to achive the exact workflow I was desiring.

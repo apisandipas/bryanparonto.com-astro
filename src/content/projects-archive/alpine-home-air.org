@@ -1,0 +1,13 @@
+#+title: Alpine Home Air
+#+order: 3
+#+client: Alpine Home Air
+#+role: Lead front-end developer, via Caxy Interactive
+#+launch_date: 2021
+#+image: alpine.png
+#+alt: The Alpine Home Air storefront: product search, category navigation and a ductless mini-split promotion.
+#+tech: react redux razzle nodejs styled-components
+#+url: https://www.alpinehomeair.com/
+#+link_label: Visit alpinehomeair.com
+#+outcome: A custom React e-commerce front end, built with a team of 2–3 developers I helped lead.
+
+My first project at Caxy: I researched, prototyped and architected the new storefront with React, Redux and styled-components, then led feature planning and implementation with the rest of the team.

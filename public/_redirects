@@ -1,0 +1,3 @@
+/posts/:slug   /blog/:slug   301
+/projects      /#work        301
+/bryan-paronto-resume-2023.pdf  /bryan-paronto-resume.pdf  301

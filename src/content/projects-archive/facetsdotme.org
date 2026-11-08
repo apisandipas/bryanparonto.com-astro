@@ -1,0 +1,13 @@
+#+title: Facets.me
+#+order: 5
+#+client: Personal project
+#+role: Solo developer
+#+launch_date: 2023
+#+image: facetsdotme.png
+#+alt: The Facets.me profile editor: avatar, handle and bio fields beside a live phone preview.
+#+tech: react typescript trpc nextjs stitches
+#+url: https://github.com/apisandipas/facetsdotme
+#+link_label: View source
+#+outcome: A Linktree-style link-in-bio app built on the T3 stack to learn it end to end.
+
+Facets.me lets you share every link to your online presence from one page. I'm most proud of the profile customization interface, with its live phone preview.

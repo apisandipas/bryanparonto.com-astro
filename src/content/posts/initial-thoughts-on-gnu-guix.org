@@ -1,0 +1,31 @@
+#+TITLE: Initial Thoughts on GNU Guix
+#+DATE: 2022-03-19
+#+PUBLISHED: true
+#+AUTHOR: Bryan Paronto
+#+CATEGORY: posts
+#+EMAIL: bryan@cablecar.digital
+#+TAGS: gnu guix linux
+
+* "Slowly Going the Way of The Buffalo"
+
+In my last post, I recalled a headache I encountered when managing dependencies across Manjaro Linux and the Arch User Repository. As a Manjaro user I was told I was using the AUR at my own risk, but after 2 years and zero issues, I'd always written that off that the typical "caveat emptor" that comes along with almost any Linux experience. I'd decided that although Manjaro has served me well in my two years of daily driving it, I felt like it may not be my =$HOME= for much longer.
+
+Since last fall I'd been "going all in" on Emacs using it in place of my normal set up of Neovim + Tmux + Kitty (editor + terminal multiplex), Obsidian (Note-taking) and Thunderbird (email client). After generally falling in love with Lisp, the slope got slippery, and I was spending time in both EXWM (Emacs X Window Manager) and StumpWM as well, configured in Emacs Lisp and Common Lisp, respectively. The [[https://systemcrafters.net/][System Crafters]] community has been a huge inspiration and well-needed distraction simultaneously. =think==
+
+That's how I was introduced to GNU Guix.
+
+Guix (pronounced as geeks) is an advanced distribution of GNU/Linux that supports transactional upgrades and rollbacks as well as a declarative system configuration via GNU's own Guile Scheme. That means not only can I easily roll back if a package upgrade breaks anything, but the entire system configuration can be kept under version control and synced across my different systems.
+
+When I encountered problems, which I did upon a few false tries in getting it set up the first time, there was really only one place to look. Not being able to log in after setting up the system? Well after checking my config code, I can see that I failed to add the declaration for adding a Window Manager. Makes perfect sense. SSH not working? Oh, it seems I forgot to declare the SSH Service. It may sound hairy but the above fixes were as simple as adding the following two lines to my configuration:
+
+#+begin_src lisp
+(service mate-desktop-service-type)
+(service openssh-service-type)
+#+end_src
+
+Aside from using it to configure my system, it's also used for package management. Being a GNU product, it puts software freedom first, which comes with some added quirks. For example, it takes extra effort to configure non-free (free as in freedom) version of software drivers and proprietary software has to either be discovered via user-made custom package "channels" or you're left to roll your own package definitions. I however don't see that as a disadvantage so much as an opportunity to contribute to the growing Guix community.
+
+As of a recent release it's now possible to not only configure basic system services, but also the user's home configuration (read: dotfiles) as well, making it possible to ditch tweaking bash, yaml, or custom configuration formats for a grand unified Guile configuration from top to bottom.
+
+I'm not daily-driving Guix just yet, but I've been impressed enough with it so far, that it' certainly contending for the spot of my next choice in Linux distro. Watch this space for more updates.
+

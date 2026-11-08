@@ -1,0 +1,33 @@
+# Render Blueprint: bryanparonto.com as a static site on Render's CDN.
+# Docs: https://render.com/docs/blueprint-spec · https://render.com/docs/redirects-rewrites
+services:
+  - type: web
+    runtime: static
+    name: bryanparonto-com
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+    # Old URLs from the Next.js site (mirrors public/_redirects, which only Netlify reads).
+    routes:
+      - type: redirect
+        source: /posts/:slug
+        destination: /blog/:slug
+      - type: redirect
+        source: /projects
+        destination: /#work
+      - type: redirect
+        source: /bryan-paronto-resume-2023.pdf
+        destination: /bryan-paronto-resume.pdf
+    headers:
+      # Astro's hashed assets never change at a given URL.
+      - path: /_astro/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin

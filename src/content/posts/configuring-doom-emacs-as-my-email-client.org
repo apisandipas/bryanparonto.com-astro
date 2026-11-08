@@ -1,0 +1,216 @@
+#+TITLE: Configuring Doom Emacs As My Email Client
+#+DATE: 2022-03-31
+#+PUBLISHED: true
+#+AUTHOR: Bryan Paronto
+#+CATEGORY: posts
+#+EMAIL: bryan@cablecar.digital
+#+TAGS: emacs mu4e configs
+
+This past weekend I spent some time configuring Doom Emacs to be my email client. It took a lot of trial and error on my part, but I finally have a working configuration. Why did I do this? I've been bitten by the Emacs bug, and the fever has taken over.
+
+In this post, I'd like to go over my final-for-now configuration and talk through some of the headaches I encountered along the way.
+
+* For the uninitiated
+
+Emacs can do everything. What may have once been a Lisp interpreter meant to interpret small programs for repetitive action within a text editor grew over its 40+ year live span to include integration with just about every computing need you think of.
+
+Recently I've been using it for everything from project management, controlling my Twitch stream. One moment, while I enable my Bluetooth speaker and switch my music to the next track. Yeah. It's that good.
+
+It's appeal to me isn't that it can Do Everything, but rather it's consistency across all these applications. Being able to configure customized workflows across all my computing use-cases in the same approach has been a game-changer.
+
+* Emacs, batteries included.
+
+Out of the box, Emacs is very capable, but it'd quite a time investment both learning and configuring. I started my journey with, and am still daily-driving a pre-configured "framework-for-lack-of-a-betterword" called [[https://github.com/hlissner/doom-emacs][Doom Emacs]]. It gives newcomers and the time-restrained a running head start by provided a curated experience of pre-configured packages.
+
+Even with the running head start, I found setting up email to be less than easy. The Doom documentation, while great in some respects is very lacking in this area. It's been a  bit of a pain point in my acclimation to the Emacs environment; it's quite fragmented and since it's old, quite a bit of my Googling (Duck-Duck-Going?) showed me learning resources that were *close* to my specific requirement, but nothing 100% in the hand-holding territory.
+
+* On with it already.
+With enough preamble, I'll now walk you through the setup and configuration process for using =mbsync=, =mu= and =mu4e= with multiple Gmail SMTP/IMAP accounts, as were my requirements. It seems to me Gmail presented more challenges than configuring other providers as Gmail presents SMTP in a slightly different way than most.
+
+While convention would have you syncing folders between your provider and your local email store, Gmail gives you labels disguised as folders.
+
+First, let's grab our dependencies, of which there are a few. (This post assumes you're running some flavor of Linux or MacOS and know how to use it's respective package manager. It also assumes an installation of Doom Emacs itself, which are outside the scope of this particular post)
+
+Grab yourself a copy of =mbsync= and =mu=. These are for syncing our mailboxes and their content. Here's some convenience hand-holding.
+
+
+For Debian / Ubuntu flavors
+#+begin_src shell
+sudo apt install mbsync
+sudo apt install mu
+#+end_src
+
+For Arch / Manjarp flavors
+#+begin_src shell
+sudo pacman install mbsync
+sudo pacman install mu
+#+end_src
+
+Now it's time to configure =mbsync=. Create a file called =.mbsyncrc= and place it in your $HOME directory. I'll include the content of my =.mbsyncrc= below. Make sure to replace every instance of the email address / account nicknames, which your own.
+
+#+begin_src shell
+# ACCOUNT INFORMATION
+
+Create Both
+Expunge Both
+SyncState *
+
+IMAPAccount youraddress@gmail
+Host imap.gmail.com
+User youraddress@gmail.com
+# You can also provide a plain text passwork like so:
+# Password yourpasswordwithoutquotes
+PassCmd "gpg --quiet --for-your-eyes-only --no-tty --decrypt \~/Mail\/.mbsync-pw-youraddress@gmail.gpg"
+AuthMechs LOGIN
+SSLType IMAPS
+CertificateFile ~/.ssh/mu4e/cert.pem
+
+IMAPStore account1@gmail-remote
+Account youraddress@gmail
+
+MaildirStore youraddress@gmail-local                  #
+Path ~/Mail/youraddress@gmail/
+Inbox ~/Mail/youraddress@gmail/INBOX
+
+Channel youraddress@gmail-inbox
+Far :youraddress@gmail-remote:
+Near :youraddress@gmail-local:
+Patterns INBOX
+
+Channel youraddress@gmail-sent
+Far :youraddress@gmail-remote:"[Gmail]/Sent Mail"
+Near  :youraddress@gmail-local:"[Gmail].Sent Mail"
+
+Channel youraddress@gmail-trash
+Far :youraddress@gmail-remote:"[Gmail]/Trash"
+Near  :youraddress@gmail-local:"[Gmail].Trash"
+
+Channel youraddress@gmail-archive
+Far :youraddress@gmail-remote:"[Gmail]/All Mail"
+Near  :youraddress@gmail-local:"[Gmail].All Mail"
+
+Channel youraddress@gmail-drafts
+Far :youraddress@gmail-remote:"[Gmail]/Drafts"
+Near :youraddress@gmail-local:"[Gmail].Drafts"
+
+
+Group youraddress@gmail
+Channel youraddress@gmail-inbox
+Channel youraddress@gmail-trash
+Channel youraddress@gmail-archive
+Channel youraddress@gmail-sent
+Channel youraddress@gmail-drafts
+
+############################################
+#...
+#+end_src
+
+For brevity, I've only included one account above, but the provided config should work for any many accounts as you need so long as you give them unique names, replace the content with your own addresses, etc.
+
+Next you'll need to create a directory for your mailboxes to live.
+
+#+begin_src shell
+mkdir -p ~/Mail/youraddress@gmail
+#+end_src
+
+ If you've had your account for 10+ years like I've had, this may take a while. Keep in mind, this will pull in every email you ever sent or received. Mine was 5 gigs. If this is an issue, you may consider omitted the "Sent Mail" and "All Mail" folders, although I'm not sure if or how that would ultimately affect the functionality we're going after here.
+
+ One more thing you'll need to do within the setting of Gmail it's self in be sure IMAP is enabled for your account as shown below
+
+ [[https://bryanparontodotcom.s3.amazonaws.com/gmail-settings-imap.png]]
+
+
+ Now it's time to fetch our mailboxes. Run the following command:
+
+ #+begin_src shell
+mbsync --all
+ #+end_src
+
+Now go make some coffee as this might take several minutes. Once your emails have finished downloading, run the following command:
+
+#+begin_src shell
+mu init --maildir ~/Mail --my-address address1@gmail.com --my-address addressN@gmail.com # for each email address youre adding.
+#+end_src
+
+Now tell =mu= to index your mailboxes with:
+#+begin_src shell
+mu index
+#+end_src
+
+Now that we have the ground work finished, we can finally (!) start to configure =mu4e=, out Emacs email client.
+
+#+begin_src scheme
+(require 'mu4e)
+
+;; list of your email adresses:
+(setq mu4e-personal-addresses '("address1@gmail.com"
+                                "address2@gmail.com"))
+
+(setq mu4e-contexts
+      `(,(make-mu4e-context
+          :name "Gmail" ;; Give it a unique name. I recommend they start with a different letter than the second one.
+          :enter-func (lambda () (mu4e-message "Entering gmail context"))
+          :leave-func (lambda () (mu4e-message "Leaving gmail context"))
+          :match-func (lambda (msg)
+                        (when msg
+                          (string= (mu4e-message-field msg :maildir) "/address1@gmail")))
+          :vars '((user-mail-address . "address1@gmail.com")
+                  (user-full-name . "Your Name Here")
+                  (mu4e-drafts-folder . "/address1@gmail/[Gmail].Drafts")
+                  (mu4e-refile-folder . "/address1@gmail/[Gmail].All Mail")
+                  (mu4e-sent-folder . "/address1@gmail/[Gmail].Sent Mail")
+                  (mu4e-trash-folder . "/address1@gmail/[Gmail].Trash")
+                  ;; SMTP configuration
+                  (starttls-use-gnutls . t)
+                  (smtpmail-starttls-credentials . '(("smtp.gmail.com" 587 nil nil)))
+                  (smtpmail-smtp-user . "address1@gmail.com")
+                  (smtpmail-auth-credentials .
+                                             '(("smtp.gmail.com" 587 "address1@gmail.com" nil)))
+                  (smtpmail-default-smtp-server . "smtp.gmail.com")
+                  (smtpmail-smtp-server . "smtp.gmail.com")
+                  (smtpmail-smtp-service . 587)))
+        ,(make-mu4e-context
+          :name "Business Address" ;; Or any other name you like.
+          :enter-func (lambda () (mu4e-message "Entering cablecar context"))
+          :leave-func (lambda () (mu4e-message "Leaving cablecar context"))
+
+          :match-func (lambda (msg)
+                        (when msg
+                          (string= (mu4e-message-field msg :maildir) "/address2@gmail")))
+          :vars '((user-mail-address . "address2@gmail.com")
+                  (user-full-name . "Your Name Here")
+                  (mu4e-drafts-folder . "/address2@gmail/[Gmail].Drafts")
+                  (mu4e-refile-folder . "/address2@gmail/[Gmail].All Mail")
+                  (mu4e-sent-folder . "/address2@gmail/[Gmail].Sent Mail")
+                  (mu4e-trash-folder . "/address2@gmail/[Gmail].Trash")
+                  ;; SMTP configuration
+                  (starttls-use-gnutls . t)
+                  (smtpmail-starttls-credentials . '(("smtp.gmail.com" 587 nil nil)))
+                  (smtpmail-smtp-user . "address2@gmail.com")
+                  (smtpmail-auth-credentials .
+                                             '(("smtp.gmail.com" 587 "address2@gmail.com" nil)))
+                  (smtpmail-default-smtp-server . "smtp.gmail.com")
+                  (smtpmail-smtp-server . "smtp.gmail.com")
+                  (smtpmail-smtp-service . 587)))
+        ))
+
+(setq mu4e-maildir-shortcuts  '((:maildir "/address2@gmail/INBOX"               :key ?i)
+                                (:maildir "/address2@gmail/[Gmail].Sent Mail"   :key ?s)
+                                (:maildir "/address2@gmail/[Gmail].Drafts"      :key ?d)
+                                (:maildir "/address2@gmail/[Gmail].Trash"       :key ?t)
+                                (:maildir "/address2@gmail/[Gmail].All Mail"    :key ?a)
+                                (:maildir "/address1@gmail/INBOX"               :key ?I)
+                                (:maildir "/address1@gmail/[Gmail].Sent Mail"   :key ?S)
+                                (:maildir "/address1@gmail/[Gmail].Drafts"      :key ?D)
+                                (:maildir "/address1@gmail/[Gmail].Trash"       :key ?T)
+                                (:maildir "/address1@gmail/[Gmail].All Mail"    :key ?A)))
+
+#+end_src
+
+And with that, you can try to fetch your email with =mu4e=. In doom that's a keystroke of =SPC o m b u= , which will land you in the "Today" box and fetch any fresh messages.
+
+Note that above, when we configure our contexts, we give them unique names. In Doom Emacs, you can switch contexts with the =;= key and then enter the first letter of the name of the context, which will then be switched.
+
+* Wrapping Up
+
+Hopefully this post will save you a good bit of time and frustration that I ended up encountering myself. My biggest piece of advice here would be to follow the mailbox naming conventions laid out here, as naming them something else will cause those Mailbox names to be created inside Gmail, and also duplicate their contents within Gmail too. It took me *several* tries to get that right, wasting a lot of time and bandwidth in the meantime. Happy Hacking!

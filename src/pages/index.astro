@@ -1,0 +1,233 @@
+---
+import { Picture, getImage } from "astro:assets";
+import Buffer from "../layouts/Buffer.astro";
+import Section from "../components/Section.astro";
+import { person, jobs, years, skills, now } from "../data/resume";
+import { getPosts, getProjects, orgDate } from "../lib/content";
+import headshot from "../assets/me.jpg";
+
+const [posts, projects] = await Promise.all([getPosts(), getProjects()]);
+// Full-size copies for the image viewer (and the no-JS link target).
+const fullSize = new Map(
+  await Promise.all(
+    projects
+      .filter((p) => p.image)
+      .map(async (p) => {
+        const img = await getImage({ src: p.image!, width: Math.min(p.image!.width, 2000), format: "webp" });
+        return [p.slug, img.src] as const;
+      }),
+  ),
+);
+const latest = posts[0];
+
+const sections = [
+  { id: "about", label: "About" },
+  { id: "work", label: "Work" },
+  { id: "experience", label: "Experience" },
+  { id: "writing", label: "Writing" },
+  { id: "contact", label: "Contact" },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: person.name,
+  jobTitle: person.role,
+  worksFor: { "@type": "Organization", name: person.employer },
+  address: { "@type": "PostalAddress", addressLocality: "Chicago", addressRegion: "IL" },
+  email: `mailto:${person.email}`,
+  url: person.site,
+  sameAs: [person.github, person.twitch],
+};
+---
+<Buffer
+  title={`${person.name} — ${person.role}`}
+  description={`${person.name} is a ${person.role.toLowerCase()} at ${person.employer} in ${person.location}. ${person.summary}`}
+  buffer="bryanparonto"
+  sections={sections}
+  jsonLd={jsonLd}
+>
+  <header class="doc-header" id="top">
+    <div class="kw" aria-hidden="true">#+TITLE:</div>
+    <h1 class="doc-title">Hi, I’m Bryan.<span class="cursor" aria-hidden="true"></span></h1>
+    <p class="doc-role">{person.role}</p>
+    <p class="doc-summary">{person.tagline}</p>
+    <dl class="doc-meta">
+      <dt>At</dt>
+      <dd>{person.employer} · since {person.since}</dd>
+      <dt>Location</dt>
+      <dd>{person.location}</dd>
+    </dl>
+    <p class="print-only">{person.email} · github.com/apisandipas · bryanparonto.com</p>
+    <p class="actions">
+      <a class="widget primary" href={`mailto:${person.email}`}>Email me</a>
+      <a class="widget" href={person.resume} download>Résumé.pdf <span aria-hidden="true">↓</span></a>
+      <a class="plain" href={person.github}>github</a>
+      <a class="plain" href={person.twitch}>twitch</a>
+    </p>
+  </header>
+
+  <Section id="about" title="About">
+    <div class="about">
+      <Picture
+        src={headshot}
+        formats={["avif", "webp"]}
+        widths={[200, 400]}
+        sizes="200px"
+        alt="Bryan Paronto: smiling, red beard, glasses, arms crossed, wearing a green patterned shirt."
+        class="headshot"
+        loading="eager"
+      />
+      <p> I'm a UI-focused full-stack developer in Chicago. For more than fifteen years I've built for the web: agency sites and startup SaaS, e-commerce storefronts, design systems, and the <strong>VA.gov homepage</strong>, which 20 million people visit every month. </p>
+      <p> What drives me is creative problem-solving and doing quality work: interfaces that are accessible and fast, backed by sensible APIs, and delivered by teams that plan well. I'm a positive, pragmatic planner who'd rather work smart than work long, and I come to the table with solutions. </p>
+      <p> Outside of client work I live in <em>Emacs</em>, tinker with Linux, and write about both <a href="/blog">on the blog</a>. </p>
+    </div>
+  </Section>
+
+  <Section id="now" title="Now">
+    <Section id="now-atomic" level={2} title={now.heading} keyword="NEXT">
+      <ul class="checklist">
+        {now.items.map((i) => (
+          <li>
+            <span class="box" aria-hidden="true">[{i.done ? <b>X</b> : " "}]</span>
+            <span><span class="visually-hidden">{i.done ? "Done: " : "In progress: "}</span>{i.text}</span>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  </Section>
+
+  <Section id="work" title="Work">
+    <p>Things I've built because I wanted them to exist. They're the best evidence I can offer of how I work: read the code, read the notes, try them.</p>
+    {projects.map((p) => (
+      <Section id={`work-${p.slug}`} level={2} title={p.title} open={false} name="work" class="work-item">
+        <div class:list={["project", { "has-image": p.image }]}>
+          <div>
+            <p class="outcome">{p.outcome}</p>
+            <p class="tags work-tags"><span class="visually-hidden">Built with: </span>{p.tech.join(" · ")}</p>
+            {(p.client || p.role || p.year) && (
+              <dl class="props">
+                {p.client && <><dt>Client</dt><dd>{p.client}</dd></>}
+                {p.role && <><dt>Role</dt><dd>{p.role}</dd></>}
+                {p.year && <><dt>Year</dt><dd>{p.year}</dd></>}
+              </dl>
+            )}
+            <div class="desc" set:html={p.html} />
+            {p.links.length > 0 && (
+              <p class="more">
+                {p.links.map((l, i) => (
+                  <>{i > 0 && <span class="faded" aria-hidden="true"> · </span>}<a href={l.href}>{l.label} <span aria-hidden="true">→</span></a></>
+                ))}
+              </p>
+            )}
+          </div>
+          {p.image && (
+            <figure class:list={["shot", { portrait: p.image.height > p.image.width && p.image.width < 1600, tall: p.image.height > p.image.width * 1.2 && p.image.width >= 1600 }]}>
+              <a
+                class="shot-link"
+                href={fullSize.get(p.slug)}
+                data-viewer
+                data-name={`${p.slug}.png`}
+                data-alt={p.alt}
+                aria-label={`View larger: ${p.title} screenshot`}
+              >
+              <Picture
+                src={p.image}
+                formats={["avif", "webp"]}
+                widths={[480, 960]}
+                sizes="(min-width: 768px) 20rem, 100vw"
+                alt={p.alt}
+              />
+              </a>
+            </figure>
+          )}
+        </div>
+      </Section>
+    ))}
+  </Section>
+
+  <Section id="experience" title="Experience">
+    <div class="org-table-wrap">
+      <table class="org-table">
+        <caption class="visually-hidden">Employment history, most recent first</caption>
+        <thead>
+          <tr><th scope="col">Years</th><th scope="col">Role</th><th scope="col">Company</th></tr>
+        </thead>
+        <tbody>
+          {jobs.map((j) => (
+            <tr><td>{years(j)}</td><td>{j.role}</td><td>{j.company}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {jobs.map((j) => (
+      <Section id={`job-${j.id}`} level={2} title={`${j.role} @ ${j.company}`} open={!j.folded} class="job">
+        <p class="when">
+          <span class="deco" aria-hidden="true">&lt;</span>{j.start}<span class="deco" aria-hidden="true">&gt;</span>
+          <span class="deco" aria-hidden="true">--</span><span class="visually-hidden"> to </span>
+          <span class="deco" aria-hidden="true">&lt;</span>{j.end ?? "now"}<span class="deco" aria-hidden="true">&gt;</span>
+          {j.also && <span class="faded"> ({j.also})</span>}
+        </p>
+        <ul class="org-list">
+          {j.bullets.map((b) => <li>{b}</li>)}
+        </ul>
+      </Section>
+    ))}
+    <p class="actions" style="margin-top: var(--s6)">
+      <a class="widget" href={person.resume} download>Download résumé.pdf <span aria-hidden="true">↓</span></a>
+    </p>
+  </Section>
+
+  <Section id="skills" title="Skills">
+    <div class="skills">
+      {skills.map(([group, items]) => (
+        <div class="skills-group">
+          <h3>{group}</h3>
+          <ul class="chips">{items.map((i) => <li>{i}</li>)}</ul>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <Section id="writing" title="Writing">
+    {latest && (
+      <Section id="writing-latest" level={2} title={latest.title} tags={latest.tags}>
+        <p class="post-meta">
+          <span class="ts"><span class="deco" aria-hidden="true">&lt;</span><time datetime={latest.date.toISOString().slice(0, 10)}>{orgDate(latest.date)}</time><span class="deco" aria-hidden="true">&gt;</span></span>
+          · {latest.minutes} min read · latest post
+        </p>
+        <p>{latest.excerpt}</p>
+        <p class="actions">
+          <a class="widget primary" href={`/blog/${latest.slug}`}>Read post<span class="visually-hidden">: {latest.title}</span></a>
+          <a class="plain" href="/blog">All {posts.length} posts <span aria-hidden="true">→</span></a>
+        </p>
+      </Section>
+    )}
+  </Section>
+
+  <Section id="contact" title="Contact">
+    <p> Open to interesting problems, collaborations, and conversations about Emacs. Email is the best way to reach me. </p>
+    <dl class="contact">
+      <dt>Email</dt><dd><a href={`mailto:${person.email}`}>{person.email}</a></dd>
+      <dt>GitHub</dt><dd><a href={person.github}>github.com/apisandipas</a></dd>
+      <dt>Twitch</dt><dd><a href={person.twitch}>twitch.tv/cablecardigital</a></dd>
+      <dt>Résumé</dt><dd><a href={person.resume} download>bryan-paronto-resume.pdf</a></dd>
+    </dl>
+  </Section>
+  <dialog class="popup viewer" id="viewer" aria-label="Image viewer">
+    <div class="viewer-canvas" data-viewer-canvas>
+      <img data-viewer-img alt="" />
+    </div>
+    <div class="modeline">
+      <span class="hl-status" aria-hidden="true">RO</span>
+      <span class="ml-buffer"><strong data-viewer-name></strong> <span class="faded">(Image)</span></span>
+      <span class="ml-pos faded" data-viewer-pos></span>
+      <button type="button" class="hl-btn" data-close aria-label="Close image">×</button>
+    </div>
+    <p class="minibuffer faded" aria-hidden="true">
+      <span class="mb-keys"><kbd>n</kbd> next · <kbd>p</kbd> previous · <kbd>q</kbd> quit</span>
+      <span class="mb-touch">tap the image to quit</span>
+    </p>
+  </dialog>
+</Buffer>

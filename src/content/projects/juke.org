@@ -1,0 +1,9 @@
+#+title: juke
+#+order: 6
+#+tech: typescript hono sse tanstack-ai claude-api
+#+links: Source https://github.com/apisandipas/juke
+#+outcome: A phone-first remote for Navidrome's jukebox mode, with an optional Ask box that builds a queue from your own library.
+#+image: juke.png
+#+alt: juke on a phone, now playing Handshake by Ghost Signal from the album Carrier Wave, with a large amber pause button, a volume slider and the next track up.
+
+A small proxy holds the Navidrome credentials and pushes jukebox state to every open tab over server-sent events. Describe a mood in the optional Ask box and an agent builds a queue from your library. The server keeps only songs that a tool actually returned, so the agent can't suggest music you don't have.

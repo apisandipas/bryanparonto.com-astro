@@ -1,0 +1,86 @@
+#+TITLE: Working with Polybar in EXWM: Part 2
+#+DATE: 2022-07-20
+#+PUBLISHED: true
+#+AUTHOR: Bryan Paronto
+#+CATEGORY: posts
+#+EMAIL: bryan@cablecar.digital
+#+TAGS: ricing emacs exwm polybar
+
+Welcome back. This is part 2 of 2 of my post(s) about working with Polybar in EXWM, the Emacs X Window Manager. If you havent yet, [[/posts/working-with-polybar-in-exwm][go to part 1]] and have a read.
+
+Today we're going over how to add workspace indicators to Polybar.
+
+** Workspace indicators in Polybar
+
+*** The Problem
+At present, EXWM does not play nice with the default =xworkspaces= Polybar module. I think this may have something to do with the fact that we're rendering these workspaces within Emacs itself and not in separate X workspaces. (Someone with better understanding, please correct me!). Instead we utilized Polybar IPC functionality to hook into the EXWM workspace change hook and update the index of the workspace via Elisp. Below is my solution for this.
+
+*** My Solution
+ First lets open our Polybar configuration. This file may be at =~/.config/polybar/config.ini= for you, but I tend to keep my EXWM-specific configuration in =~/.doom.d/exwm/polybar.config.ini=
+
+ #+begin_src conf
+[module/exwm-ws-indicator]
+  type = custom/ipc
+  hook-0 = emacsclient -e "(bp/polybar-exwm-ws-indicator)" -s default | sed -e 's/^"//' -e 's/"$//'
+  initial = 1
+  format-underline = ${colors.magenta}
+  format-foreground = ${colors.magenta}
+  format-margin = 1
+ #+end_src
+
+ Then add the module to the =modules-*=  section of your choice. Here I'm chosing to place it in the center of the bar. Also, very important, make sure you're using the appropriate font for your icon set. I'm using =Iosevka Nerd Font= .
+
+ #+begin_src conf
+  ...
+  font-0 = Iosevka Nerd Font:style=Medium,Regular
+  ...
+  modules-center = exwm-ws-indicator
+  ...
+ #+end_src
+
+ As you can see in the above configuration, we'll need to define the =bp-polybar-ws-indicator= function, but first, lets make sure Emacs and Polybar can communicate via IPC, or Inter-process Communication. Credit to David Wilson of [[http://systemcrafters.net][System Crafters]] for this function, which can be used for general IPC between Polybar and Emacs. See his video on crafting the "Perfect Panel" [[https://www.youtube.com/watch?v=usCfMstCZ7E][here]]
+
+ #+begin_src emacs-lisp
+(defun bp/send-polybar-hook (module-name hook-index)
+  "Generic IPC hook function for communicating with Polybar"
+  (start-process-shell-command "polybar-msg" nil (format "polybar-msg hook %s %s" module-name hook-index)))
+ #+end_src
+
+Next, we define our hook-wrapping function, which specifies Polybar which module we're hooking into and passes the intial value.
+
+#+begin_src emacs-lisp
+(defun bp/send-polybar-exwm-ws-indicator ()
+  "Wraps the hook for the 'exwm-ws-indicator' Polybar module"
+  (bp/send-polybar-hook "exwm-ws-indicator" 1))
+#+end_src
+
+Now, we'll send Polybar the text we want it to display for our indicator module. Yes, this is a bit verbose and I'm certain I could write some more clever =elisp= code to properly insert the "current" icon into the appropriate index in the list. I'll leave that as an exercise for the reader. For now, we'll write a switch case statement, which in elisp is called =pcase= where p stands for predicate. With this in place, we should be able to select which indicator set to display in the Polybar panel.
+
+#+begin_src emacs-lisp
+(defun bp/polybar-exwm-ws-indicator ()
+  "Switch case to select the appropriate indicator"
+  (pcase exwm-workspace-current-index
+     (0 "                   ")
+     (1 "                   ")
+     (2 "                   ")
+     (3 "                   ")
+     (4 "                   ")
+     (5 "                   ")
+     (6 "                   ")
+     (7 "                   ")
+     (8 "                   ")
+     (9 "                   ")))
+#+end_src
+
+I've chosen to use the empty circle icons as the workspaces, with the filled icon indicating the current workspace. The icons are easily swapped. If your using a [[https://nerdfonts.com][Nerd Font]] variant, and I highly recommend that you do, you can check out their [[https://www.nerdfonts.com/cheat-sheet][cheatsheet]] for more icons.
+
+Finally, we add a hook to respond to workspace switch events, which in turn calls our hook method and updates the icons in the panel.
+
+#+begin_src emacs-lisp
+;; Update panel indicator when workspace changes
+(add-hook 'exwm-workspace-switch-hook #'bp/send-polybar-exwm-ws-indicator)
+#+end_src
+
+With those in place, we should see the indicators in the Polybar panel, and when we switch workspaces, we should see it update.
+
+This concludes the 2-part post on working with Polybar in EXWM. Hopefully this information will serve you well in your EXWM "ricing" endeavors and you're able to extrapolate your own custom EXWM/Polybar modules from here.

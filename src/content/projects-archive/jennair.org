@@ -1,0 +1,11 @@
+#+title: JennAir
+#+order: 2
+#+client: Whirlpool Corporation
+#+role: Principal consultant, via Cable Car Digital
+#+launch_date: 2022
+#+tech: react storybook styled-components aem
+#+url: https://www.jennair.com/
+#+link_label: Visit jennair.com
+#+outcome: A multi-brand, themeable React component system for a top appliance maker.
+
+I spearheaded and led development of a themeable React UI component library, documented in Storybook and built with styled-components, that integrates with Adobe Experience Manager so several brands can share one system.

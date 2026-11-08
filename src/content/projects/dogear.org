@@ -1,0 +1,9 @@
+#+title: Dogear
+#+order: 2
+#+tech: tanstack-start react postgres drizzle better-auth
+#+links: Live at dogear.sh https://dogear.sh
+#+outcome: A read-later app. Save a page from the address bar, and the server fetches it, keeps a clean copy of the article, and files it under your tags.
+#+image: dogear-app.png
+#+alt: Dogear's library in dark mode: 298 saved items with 85 dog-eared, tag counts in the sidebar, and a long grid of article cards whose unread ones have a folded orange corner.
+
+Type ~rl rust async~ in the address bar and the page is saved with those tags. The server keeps a clean, sanitized copy of the article. Opening an item doesn't mark it read. It's my standard first-version client stack in practice: invites, migrations, object storage, email, and tests.

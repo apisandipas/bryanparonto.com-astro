@@ -1,0 +1,31 @@
+---
+import Buffer from "../../layouts/Buffer.astro";
+import { getPosts, orgDate } from "../../lib/content";
+
+const posts = await getPosts();
+---
+<Buffer
+  title="Writing — Bryan Paronto"
+  description="Notes on Emacs, org-mode, Linux and front-end development by Bryan Paronto."
+  buffer="writing.org"
+  back
+>
+  <header class="doc-header">
+    <div class="kw" aria-hidden="true">#+TITLE:</div>
+    <h1 class="page-title">Writing</h1>
+    <p class="faded">{posts.length} posts on Emacs, org-mode, Linux and the web. <a href="/rss.xml">RSS</a></p>
+  </header>
+  <ol class="agenda" reversed>
+    {posts.map((p) => (
+      <li>
+        <span class="ts"><span class="deco" aria-hidden="true">&lt;</span><time datetime={p.date.toISOString().slice(0, 10)}>{orgDate(p.date)}</time><span class="deco" aria-hidden="true">&gt;</span></span>
+        <div>
+          <a class="title" href={`/blog/${p.slug}`}>{p.title}</a>
+          <div class="tags"><span class="visually-hidden">Tags: </span><span aria-hidden="true">:</span>{p.tags.map((t) => (
+            <><a class="tag-link" href={`/tags/${t}`}>{t}</a><span aria-hidden="true">:</span></>
+          ))}</div>
+        </div>
+      </li>
+    ))}
+  </ol>
+</Buffer>

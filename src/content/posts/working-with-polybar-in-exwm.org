@@ -1,0 +1,80 @@
+#+TITLE: Working with Polybar in EXWM: Part 1
+#+DATE: 2022-07-15
+#+PUBLISHED: true
+#+AUTHOR: Bryan Paronto
+#+CATEGORY: posts
+#+EMAIL: bryan@cablecar.digital
+#+TAGS: ricing emacs exwm polybar
+
+I've been daily driving the Emacs X Window Manager as my main window manager for the past 6 months at this point, and for me, it's been a great tool. It's not without some quirks, but on the whole it's enabled me from move from using a disparate set of tools to now having an Integrated Computing Environment, from within which I can manage my GTD workflow, blog, read Emails & RSS Feeds, browse the web and more. It's true: Emacs really does make a great Operating System.
+
+** Starting and Stopping Polybar
+
+*** The Problem
+
+Like many recent converts, I adopted a lot of the configuration used by David Wilson of [[http://systemcrafters.net][System Crafters]]. Part of that configuration as his
+=efs/start-panel= & =efs/kill-panel= functions. These functions start a polybar shell command from within emacs, being sure to kill any existing processes before spawn a new instance of the bar. It does this by capturing a reference to the process to that later it can be passed to the built-in =kill-process= function.
+
+Unfortunately, I run a multi-monitor setup and David's script I borrowed, only launches =polybar= on the main screen. As a temporary workaround, I continued to use the bash script I call from within my old =bspwm= configuration to launch =polybar=. This didn't feel very Emacs Zen-like, so I set out to devise a better way.
+
+*** My Solution
+
+I came up with the following:
+
+First, I set up an empty variable which will later fold references to the running polybar instances.
+
+#+begin_src emacs-lisp
+(defvar bp/polybar-processes nil
+  "A list of running polybar processes. So that we can kill them later. 👿")
+
+#+end_src
+
+In the next section, I query for a list of attached monitors, this type via polybar itself. I could use =xrandr= for this, but this output is easier to parse, and it's one less dependency to rely upon from within a single script. Using =cut= I split the input by the delimiter ":", and take the first fragment, remove extraneous new-lines, and finally break the monitor names onto their own entries
+
+#+begin_src emacs-lisp
+(defun bp/get-monitors-list ()
+  "Get a list of the currently connected monitors.
+
+Requires polybar, instead of relying on xrandr,
+ though you probably want it installed too."
+  (split-string
+   (substring (shell-command-to-string "polybar -m | cut -d: -f 1") 0 -1) "\n"))
+
+
+#+end_src
+
+As defined, the =bp/kill-panel= function will iterate over the list of running =polybar= processes and terminate them  in succession, and finally, resetting the process list to nil.
+
+#+begin_src emacs-lisp
+
+(defun bp/kill-panel ()
+  "Stop any running polybar processes"
+  (interactive)
+  (let ((process-list bp/polybar-processes))
+    (dolist (p process-list)
+     (kill-process p)))
+  (setq bp/polybar-processes nil))
+
+#+end_src
+
+As it's first order of business, the =bp/start-panel= function calls the =bp/kill-panel= function to clear out any existing running processes. It then calls =bp/get-monitors-list=, mapping over our list monitors and interpolating their names into the shell command to start polybar.
+
+#+begin_src emacs-lisp
+
+(defvar bp/polybar-config-location "~/.doom.d/exwm/polybar.config.ini"
+  "The customized location of your polybar config.ini.
+ You'll most certainly want to customize this value. ")
+
+(defun bp/start-panel ()
+  "Start polybar on each connected monitor"
+  (interactive)
+  (bp/kill-panel)
+  (setq bp/polybar-processes
+        (mapcar (lambda (monitor)
+                  (start-process-shell-command "polybar" nil
+                                               (format "MONITOR=%s polybar -c %s --reload main" monitor bp/polybar-config-location)))
+                (bp/get-monitors-list))))
+
+#+end_src
+
+With these in place, I can now interactively show and hide the =polybar= as needed from within Emacs.

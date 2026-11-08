@@ -1,0 +1,9 @@
+#+title: Briefcase
+#+order: 1
+#+tech: tanstack-start react postgres drizzle better-auth claude-api
+#+links: Live at briefcase.rodeo (invite-only) https://briefcase.rodeo
+#+outcome: Paste a client brief, answer a few clarifying questions, and Briefcase writes you a discovery plan with risks, tickets and hour estimates.
+#+image: briefcase-app.png
+#+alt: A Briefcase plan for a pottery class booking website: a summary with a 101–188 hour agent-assisted estimate against 228–411 by hand, 12 features and 33 tickets, then open questions, risks and the feature list with hours per feature.
+
+Briefcase asks up to eight questions that could change the scope, then streams a plan: summary, risks, and tickets with acceptance criteria. Each ticket gets two hour ranges, one for agent-assisted work and one for work done by hand. The model fills a fixed schema, and the server checks each result against the limits and repairs small errors instead of rejecting them.

@@ -1,0 +1,9 @@
+#+title: lore
+#+order: 4
+#+tech: typescript bun cli
+#+links: Documentation https://apisandipas.github.io/lore/ | Source https://github.com/apisandipas/lore
+#+outcome: Typed project notes that tell a coding agent which specs and decisions apply before it edits a file.
+#+image: lore.png
+#+alt: lore's documentation home page: the headline The notes your code answers to, an install command, and a source file linked to the spec and package note that govern it.
+
+Ask lore about a file and it lists the specs, decisions and module notes that govern it, and why each one matched. It reads plain Markdown in the working tree, with no index or network, so the answer is never stale. This is how I run agent-assisted projects.

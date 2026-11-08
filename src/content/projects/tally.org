@@ -1,0 +1,9 @@
+#+title: Tally
+#+order: 3
+#+tech: tanstack-start react postgres drizzle better-auth
+#+links: Live at tally.cablecar.digital https://tally.cablecar.digital
+#+outcome: Habits shared with a partner or a few close friends. Streaks count by day, week or month, a pause never breaks one, and you choose who sees each habit.
+#+image: tally-app.png
+#+alt: Tally's Today view: a Next up card for Drink water, today's habits with tally-mark streaks, then this week's and this month's habits, one already done.
+
+Progress adds up across each period, and a streak only breaks when a period ends short. A pause isn't a miss. Habits are private until you share them with someone, who can then send a reaction or a short note. I wrote these rules down as specs before writing any code.
