@@ -180,13 +180,15 @@ const jsonLd = {
   </Section>
 
   <Section id="skills" title="Skills">
-    <div class="skills">
-      {skills.map(([group, items]) => (
-        <div class="skills-group">
-          <h3>{group}</h3>
-          <ul class="chips">{items.map((i) => <li>{i}</li>)}</ul>
-        </div>
-      ))}
+    <div class="org-table-wrap">
+      <table class="org-table skills-table">
+        <caption class="visually-hidden">Skills by area</caption>
+        <tbody>
+          {skills.map(([area, items]) => (
+            <tr><th scope="row">{area}</th><td>{items}</td></tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   </Section>
 

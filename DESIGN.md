@@ -202,7 +202,7 @@ The header-line drops the section links and shows an **`☰ Outline`** button in
 3. Last is a `[ Résumé.pdf ↓ ]` widget button.
 
 ### 6.6 Skills
-Grouped chips, two columns on ≥768px: Languages, Front end, Back end, Data, AI, Tools & services, Practice. Each group has a small-caps `--faded` label over a wrap of 1px-bordered `--bg-dim` chips. Data is `skills: [group, items[]][]` in `resume.ts`. Keep it current: outdated libraries (styled-components, Redux, Apollo) were removed. Print renders each group as one comma-separated line.
+An org table with one row per area (Languages, Front end, Back end, Data, AI, Practice) and a short list of essentials, in the same table style as Experience: small-caps `--faded` row headers, `--strong` values, 1px row rules. Essentials only, no exhaustive lists; data is `skills: [area, items][]` in `resume.ts`. Outdated libraries (styled-components, Redux, Apollo) are out.
 
 ### 6.7 Now
 An org list with keywords:

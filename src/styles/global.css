@@ -589,25 +589,23 @@ details:not([open]) > summary .ellipsis { display: inline; }
   color: var(--salient);
 }
 
-/* ---------- skills: grouped chips ---------- */
-.skills { display: grid; gap: var(--s5) var(--s6); }
-@media (min-width: 768px) { .skills { grid-template-columns: 1fr 1fr; } }
-.skills-group h3 {
-  margin: 0 0 var(--s2);
+/* ---------- skills: org table (area | essentials) ---------- */
+.skills-table th {
+  width: 11ch;
   color: var(--faded);
   font-size: var(--t-meta);
-  font-weight: 500;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  white-space: nowrap;
+  vertical-align: baseline;
 }
-.chips { display: flex; flex-wrap: wrap; gap: var(--s2); margin: 0; padding: 0; list-style: none; }
-.chips li {
-  padding: 2px var(--s3);
-  border: 1px solid var(--border);
-  background: var(--bg-dim);
-  color: var(--strong);
-  font-size: 0.9375rem;
-  line-height: 1.6;
+.skills-table td { color: var(--strong); }
+.skills-table tr + tr > * { border-top: 1px solid var(--border); }
+.skills-table th, .skills-table td { padding-block: var(--s2); }
+@media (max-width: 599px) {
+  .skills-table th { display: block; width: auto; padding: 0; border: 0; }
+  .skills-table tr + tr > * { border-top: 0; }
 }
 
 /* ---------- writing ---------- */
@@ -806,7 +804,6 @@ figure.src pre {
   .project .outcome { margin-bottom: 2pt; }
   .org-body { padding-top: 4pt; }
   .org-list > li { margin-bottom: 1pt; }
-  .skills { display: block; } .skills-group { margin-bottom: 2pt; } .skills-group h3 { display: inline; } .chips { display: inline; } .chips li { display: inline; border: 0; padding: 0; background: none; } .chips li:not(:last-child)::after { content: ", "; }
   .job .when { margin-bottom: 2pt; }
   p, ul, dl { margin-bottom: 4pt; }
   .doc-header { padding: 0 0 12pt; }

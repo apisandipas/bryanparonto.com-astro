@@ -141,14 +141,14 @@ export const years = (j: Job) => {
   return from === to ? from : `${from}–${to}`;
 };
 
-export const skills: [string, string[]][] = [
-  ["Languages", ["TypeScript", "JavaScript", "HTML", "CSS", "SQL", "Bash", "Ruby", "PHP"]],
-  ["Front end", ["React", "TanStack Router, Query, Form & Table", "Tailwind CSS", "shadcn/ui", "Base UI", "Astro", "Next.js", "Storybook"]],
-  ["Back end", ["Node.js", "Bun", "TanStack Start", "Hono", "Better Auth", "Express", "Ruby on Rails", "REST & GraphQL APIs", "Server-sent events"]],
-  ["Data", ["PostgreSQL", "Drizzle ORM", "Zod", "SQLite", "MySQL", "Redis", "MongoDB", "S3-compatible storage"]],
-  ["AI", ["Claude API", "TanStack AI", "Structured output & tool use", "Claude Code", "Codex"]],
-  ["Tools & services", ["Vite", "Vitest", "ESLint", "Prettier", "Docker", "Nix", "Git", "GitHub Actions", "Render", "PostHog", "Postmark", "Backblaze B2", "Emacs", "Figma"]],
-  ["Practice", ["Accessibility (WCAG)", "Design systems", "Leading small teams", "Scoping & estimation", "Spec-driven development"]],
+// Essentials only: one row per area, rendered as an org table.
+export const skills: [string, string][] = [
+  ["Languages", "TypeScript, JavaScript, SQL, HTML & CSS"],
+  ["Front end", "React, TanStack, Tailwind CSS, Astro, Next.js"],
+  ["Back end", "Node.js, Bun, Hono, TanStack Start, REST & GraphQL APIs"],
+  ["Data", "PostgreSQL, Drizzle ORM, SQLite, Redis"],
+  ["AI", "Claude API, tool use & structured output, Claude Code"],
+  ["Practice", "Accessibility (WCAG), design systems, leading small teams, scoping & estimation"],
 ];
 
 // DRAFT: Bryan to edit.
