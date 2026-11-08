@@ -506,7 +506,7 @@ details:not([open]) > summary .ellipsis { display: inline; }
 .popup.viewer[open] { display: flex; }
 .popup.viewer.tall { height: calc(100vh - 2 * var(--gutter)); }
 .popup.viewer.tall .viewer-canvas { overflow-y: auto; place-items: start center; }
-.popup.viewer.tall .viewer-canvas img { width: min(100%, 1100px); max-height: none; }
+.popup.viewer.tall .viewer-canvas img { width: min(100%, 1280px); max-height: none; }
 .viewer-canvas {
   flex: 1 1 auto;
   min-height: 0;

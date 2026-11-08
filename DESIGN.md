@@ -242,7 +242,7 @@ The header-line is covered in §5. With JS off, it shows the status tag, buffer 
 - Both are native `<dialog>`: `?` opens **which-key** and `☰` opens **outline**. They're centred with a max width of 480px, a `--bg-dim` background, a 1px border, 4px radius and one soft shadow.
 - `Esc` closes them and focus returns to the trigger.
 - which-key is a two-column grid showing `key → description`. The keys are drawn as `<kbd>` with a 1px border.
-- **Image viewer** (image-mode buffer with a modeline): `n`/`p` step through screenshots, `q` quits, a click on the image closes. Full-page desktop shots (≥1600px wide, taller than 1.2:1) get `.tall`: they show at up to 1100px wide and scroll inside the canvas (`overscroll-behavior: contain`) instead of shrinking to fit.
+- **Image viewer** (image-mode buffer with a modeline): `n`/`p` step through screenshots, `q` quits, a click on the image closes. Desktop shots (≥1600px wide, i.e. not phone shots) get `.tall`: they show at up to 1280px wide so the text is readable, and scroll inside the canvas (`overscroll-behavior: contain`) instead of shrinking to fit.
 - **Scroll lock:** while any dialog is open, `html:has(dialog[open])` sets `overflow: hidden`; `scrollbar-gutter: stable` stops layout shift.
 
 ### 6.12 Blog post page

@@ -237,9 +237,9 @@ function initViewer() {
   const pos = $("[data-viewer-pos]", dlg)!;
   let current = 0;
   const canvas = $("[data-viewer-canvas]", dlg)!;
-  // Full-page desktop shots scroll at a readable width instead of shrinking to fit.
+  // Desktop shots (not phone shots) open at a readable width and scroll, instead of shrinking to fit the window.
   img.addEventListener("load", () => {
-    dlg.classList.toggle("tall", img.naturalWidth >= 1600 && img.naturalHeight > img.naturalWidth * 1.2);
+    dlg.classList.toggle("tall", img.naturalWidth >= 1600);
     canvas.scrollTop = 0;
   });
 
