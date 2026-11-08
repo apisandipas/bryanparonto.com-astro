@@ -1,0 +1,41 @@
+---
+import Buffer from "../layouts/Buffer.astro";
+---
+<Buffer
+  title="Not found — Bryan Paronto"
+  description="That page doesn't exist on bryanparonto.com."
+  buffer="*Messages*"
+  back
+>
+  <header class="doc-header">
+    <div class="kw" aria-hidden="true">#+TITLE:</div>
+    <h1 class="page-title">404: no such buffer</h1>
+    <p>That page doesn't exist. It may have moved when the site was rebuilt, or the link has a typo.</p>
+    <p class="find-file" aria-hidden="true">
+      <span class="faded">Find file:</span> ~/bryanparonto.com<span data-path></span><span class="cursor"></span>
+      <span class="faded">[No match]</span>
+    </p>
+    <p class="actions">
+      <a class="widget primary" href="/">Home</a>
+      <a class="widget" href="/blog">All posts</a>
+      <a class="plain" href="/#work">Work</a>
+    </p>
+  </header>
+</Buffer>
+
+<script is:inline>
+  // Echo the requested path in the minibuffer line, as find-file would.
+  document.querySelector("[data-path]").textContent = location.pathname;
+</script>
+
+<style>
+  .find-file {
+    margin: var(--s5) 0 var(--s6);
+    padding: var(--s2) var(--s3);
+    background: var(--bg-dim);
+    border-left: 2px solid var(--popout);
+    font-size: var(--t-meta);
+    overflow-wrap: anywhere;
+  }
+  .find-file .cursor { height: 1em; vertical-align: -0.15em; margin-right: 0.6ch; }
+</style>
